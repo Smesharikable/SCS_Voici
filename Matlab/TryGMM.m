@@ -1,8 +1,10 @@
 function [fitgmm, input] = TryGMM(count)
     % create gmm for input
-    mu = [-1, -10; 3, -5; 4, 9; -3, 5];
+    N = 4;
+    mu = -10 + 20 * rand(N, 2);
     sigma = [2 0; 0 .5];
-    p = rand(1, 4);
+    % N Gaussian approximated by count Gaussian
+    p = rand(1, N);
     gmm = gmdistribution(mu, sigma, p);
 
     figure;
