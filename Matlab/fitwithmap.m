@@ -3,12 +3,13 @@
 % srcgmm - source gaussian mixture model
 % relfactor - pozitive integer representing measure of influence of new
 %   data to adaptation source model 
-function gmm = fitwithmap(input, srcgmm, relfactor)
-    
+function gmm = fitwithmap(srcgmm, relfactor)
+    input = random(srcgmm, 1000);
     if strcmp(srcgmm.CovType, 'full')
         gmm = gmmMap(input, srcgmm, relfactor, @diag);
     else 
         gmm = gmmMap(input, srcgmm, relfactor, @emptyFunc);
+        input
     end
     
 end
@@ -52,10 +53,12 @@ function gmm = gmmMap(input, srcgmm, relfactor, correctDimension)
         weights(i) = (coef(i) * weights(i) / T + (1 - coef(i)) * w(i));
         means(i, :) = coef(i) .* means(i) + (1 - coef(i)) .* mu(i, :);
         sigmas(:, :, i) = coef(i) .* sigmas(:, :, i) + (1 - coef(i)) .* (sigma(:, :, i)...
-            + correctDimension(mu(i, :) .* mu(i, :))) - correctDimension(means(i, :) .* means(i, :));
+            + correctDimension(mu(i, :) .* mu(i, :))) - correctD  imension(means(i, :) .* means(i, :));
     end
            
     gmm = gmdistribution(means, sigmas, weights);
+    figure;
+    ezsurf(@(x, y)pdf(gmm, [x y]), [-15 15], [-15 15], 200);
     
 end
 
