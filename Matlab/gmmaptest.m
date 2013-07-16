@@ -2,7 +2,7 @@ classdef gmmaptest
     
     properties (Access = public)
         relativeCoeff = 16;
-        isChanges = false;
+        visualizing = false;
     end
     
     properties (GetAccess = public, SetAccess = protected)
@@ -28,15 +28,6 @@ classdef gmmaptest
             end
         end
         
-        function obj = set.gmmin(obj, gmm)
-            if ~isa(gmm, 'gmdistribution')
-                error('Input parameter must be a gmdistribution');
-            end
-            assert(obj.gmmin.NComponents == gmm.NComponents);
-            assert(obj.gmmin.NDimensions == gmm.NDimensions);
-            obj.gmmin = gmm;
-        end
-        
         function obj = set.gmmout(obj, gmm)
             if ~isa(gmm, 'gmdistribution')
                 error('Input parameter must be a gmdistribution');
@@ -51,9 +42,9 @@ classdef gmmaptest
             end
         end
         
-        function obj = set.isChanges(obj, isChanges)
-            if isscalar(isChanges) && islogical(isChanges)
-                obj.isChanges = isChanges;
+        function obj = set.visualizing(obj, visualize)
+            if isscalar(visualize) && islogical(visualize)
+                obj.visualizing = visualize;
             end
         end
         
@@ -63,6 +54,7 @@ classdef gmmaptest
         
         % data - matrix n-by-d, where n is the number of observations,
         %   and d is the dimensions of the data
+        % equal coefficients
         function test = fitbymeans(obj, data, iterations)
             obj.checkData(data);
             outGmm = obj.gmmin;
@@ -71,25 +63,57 @@ classdef gmmaptest
             oldmu = obj.gmmin.mu;
             for k = 1:iterations
                 Pr = posterior(outGmm, data);
-                obj.newp = zeros(1, obj.gmmin.PComponents);
+                obj.newp = zeros(1, obj.gmmin.NComponents);
                 obj.newmu = zeros(obj.gmmin.NComponents, obj.gmmin.NDimensions);
-                obj.coef = zeros(1, obj.gmmin.PComponents);
+                obj.coef = obj.pstat / (obj.pstat + obj.relativeCoeff);
                 for i = 1:obj.gmmin.NComponents
                     obj.pstat(i) = sum(Pr(:, i));
                     obj.Exstat(i, :) = (Pr(:, i)' * data) / obj.pstat(i);
-                    obj.coef(i) = obj.pstat / (obj.pstat + obj.relativeCoeff);
+                    obj.newp(i) = obj.coef * obj.pstat(i) / T + (1 - obj.coef) * oldp(i);
+                    obj.newmu(i, :) = obj.coef * obj.Exstat(i, :) + (1 - obj.coef) * oldmu(i, :);
+                end
+                outGmm = gmdistribution(obj.newmu, obj.gmmin.Sigma, oldp);
+                oldmu = obj.newmu;
+            end
+            if obj.visualizing
+                obj.visualize(data, outGmm);
+            end
+            obj.gmmout = outGmm;
+            obj.gmmin = outGmm;
+            test = obj;
+        end
+        
+        % different coefficients
+        function test = fitbymeans2(obj, data, iterations)
+            obj.checkData(data);
+            outGmm = obj.gmmin;
+            T = length(data(:, 1));
+            oldp = obj.gmmin.PComponents;
+            oldmu = obj.gmmin.mu;
+            for k = 1:iterations
+                Pr = posterior(outGmm, data);
+                obj.newp = zeros(1, obj.gmmin.NComponents);
+                obj.newmu = zeros(obj.gmmin.NComponents, obj.gmmin.NDimensions);
+                obj.coef = zeros(1, obj.gmmin.NComponents);
+                for i = 1:obj.gmmin.NComponents
+                    obj.pstat(i) = sum(Pr(:, i));
+                    obj.coef(i) = obj.pstat(i) / (obj.pstat(i) + obj.relativeCoeff);
+                    obj.Exstat(i, :) = (Pr(:, i)' * data) / obj.pstat(i);
                     obj.newp(i) = obj.coef(i) * obj.pstat(i) / T + (1 - obj.coef(i)) * oldp(i);
                     obj.newmu(i, :) = obj.coef(i) * obj.Exstat(i, :) + (1 - obj.coef(i)) * oldmu(i, :);
                 end
                 outGmm = gmdistribution(obj.newmu, obj.gmmin.Sigma, oldp);
                 oldmu = obj.newmu;
             end
-            obj.visualize(data, outGmm);
+            if obj.visualizing
+                obj.visualize(data, outGmm);
+            end
             obj.gmmout = outGmm;
             obj.gmmin = outGmm;
             test = obj;
         end
         
+        % fitting given gmm by weight using equal coefficients
         function test = fitbyweight(obj, data, iterations)
             obj.checkData(data);
             outGmm = obj.gmmin;
@@ -97,16 +121,42 @@ classdef gmmaptest
             oldp = obj.gmmin.PComponents;
             for k = 1:iterations
                 Pr = posterior(outGmm, data);
-                obj.newp = zeros(1, obj.gmmin.PComponents);
-                obj.coef = zeros(1, obj.gmmin.PComponents);
+                obj.newp = zeros(1, obj.gmmin.NComponents);
+                obj.coef = zeros(1, obj.gmmin.NComponents);
+                obj.coef(1, :) = obj.pstat / (obj.pstat + obj.relativeCoeff);
                 for i = 1:obj.gmmin.NComponents
                     obj.pstat(i) = sum(Pr(:, i));
-                    obj.coef(i) = obj.pstat / (obj.pstat + obj.relativeCoeff);
                     obj.newp(i) = obj.coef(i) * obj.pstat(i) / T + (1 - obj.coef(i)) * oldp(i);
                 end
                 outGmm = gmdistribution(obj.gmmin.mu, obj.gmmin.Sigma, obj.newp);
             end
-            obj.visualize(data, outGmm);
+            if obj.visualizing
+                obj.visualize(data, outGmm);
+            end
+            obj.gmmout = outGmm;
+            test = obj;
+        end
+        
+        % fitting given gmm by weight using different coefficients
+        function test = fitbyweight2(obj, data, iterations)
+            obj.checkData(data);
+            outGmm = obj.gmmin;
+            T = length(data(:, 1));
+            oldp = obj.gmmin.PComponents;
+            for k = 1:iterations
+                Pr = posterior(outGmm, data);
+                obj.newp = zeros(1, obj.gmmin.NComponents);
+                obj.coef = zeros(1, obj.gmmin.NComponents);
+                for i = 1:obj.gmmin.NComponents
+                    obj.pstat(i) = sum(Pr(:, i));
+                    obj.coef(i) = obj.pstat(i) / (obj.pstat(i) + obj.relativeCoeff);
+                    obj.newp(i) = obj.coef(i) * obj.pstat(i) / T + (1 - obj.coef(i)) * oldp(i);
+                end
+                outGmm = gmdistribution(obj.gmmin.mu, obj.gmmin.Sigma, obj.newp);
+            end
+            if obj.visualizing
+                obj.visualize(data, outGmm);
+            end
             obj.gmmout = outGmm;
             test = obj;
         end
@@ -133,7 +183,7 @@ classdef gmmaptest
             end
             scatter(oldmu(:, 1), oldmu(:, 2))
             scatter(obj.Exstat(:, 1), obj.Exstat(:, 2))
-            ezcontour(@(x, y)pdf(outGmm, [x y]), [-15 15], [-15 15], 200)
+            ezcontour(@(x, y)pdf(outGmm, [x y]), [-15 15], [-15 15], 300)
         end
         
     end
