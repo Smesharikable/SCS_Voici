@@ -28,14 +28,7 @@ classdef gmmaptest
             end
         end
         
-        function obj = set.gmmin(obj, gmm)
-            if ~isa(gmm, 'gmdistribution')
-                error('Input parameter must be a gmdistribution');
-            end
-            assert(obj.gmmin.NComponents == gmm.NComponents);
-            assert(obj.gmmin.NDimensions == gmm.NDimensions);
-            obj.gmmin = gmm;
-        end
+
         
         function obj = set.gmmout(obj, gmm)
             if ~isa(gmm, 'gmdistribution')
@@ -69,15 +62,30 @@ classdef gmmaptest
             T = length(data(:, 1));
             oldp = obj.gmmin.PComponents;
             oldmu = obj.gmmin.mu;
+            oldSigma = obj.gmmin.Sigma;
             for k = 1:iterations
-                Pr = posterior(outGmm, data);
-                obj.newp = zeros(1, obj.gmmin.PComponents);
+                %Pr = posterior(outGmm, data);
+                obj.newp = zeros(1, obj.gmmin.NComponents);
                 obj.newmu = zeros(obj.gmmin.NComponents, obj.gmmin.NDimensions);
-                obj.coef = zeros(1, obj.gmmin.PComponents);
+                obj.coef = zeros(1, obj.gmmin.NComponents);
+                p = zeros(1, obj.gmmin.NComponents);
+                Pr = zeros(T, obj.gmmin.NComponents);
+                compDensity = zeros(1, obj.gmmin.NComponents);
+                compDensityMult = 1 / ((2 * pi)^(obj.gmmin.NDimensions/2) * (det(oldSigma)^(0.5)));
+                for t = 1:T
+                    for i = 1:obj.gmmin.NComponents
+                        for j = 1:obj.gmmin.NComponents
+                            compDensity(j)= compDensityMult * exp(-0.5 * (data(t,:) - oldmu(j,:)) * inv(oldSigma) * (data(t,:) - oldmu(j,:))');
+                        end;
+                        summ = sum(oldp(:) .* compDensity(:));
+                        p(i) = (oldp(i) * compDensity(i)) / summ;
+                        Pr(t,i) = p(i);
+                    end
+                end
                 for i = 1:obj.gmmin.NComponents
-                    obj.pstat(i) = sum(Pr(:, i));
+                    obj.pstat(i) = sum(Pr(:,i));
                     obj.Exstat(i, :) = (Pr(:, i)' * data) / obj.pstat(i);
-                    obj.coef(i) = obj.pstat / (obj.pstat + obj.relativeCoeff);
+                    obj.coef(i) = obj.pstat(i)/ (obj.pstat(i) + obj.relativeCoeff);
                     obj.newp(i) = obj.coef(i) * obj.pstat(i) / T + (1 - obj.coef(i)) * oldp(i);
                     obj.newmu(i, :) = obj.coef(i) * obj.Exstat(i, :) + (1 - obj.coef(i)) * oldmu(i, :);
                 end
