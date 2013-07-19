@@ -12,7 +12,10 @@ function [fitgmm, input] = TryGMM(count)
 
     % applying EM algorithm
     input = random(gmm, 1000);
-    fitgmm = gmdistribution.fit(input, count, 'Start', 'randSample', 'CovType', 'diagonal','SharedCov', false, 'Regularize', 0.01);
+    mu = -10 + 20 * rand(N, 2);
+    p = rand(1, N);
+    fitgmm = gmdistribution(mu, sigma, p);
+    %fitgmm = gmdistribution.fit(input, count, 'Start', 'randSample', 'CovType', 'diagonal','SharedCov', false, 'Regularize', 0.01);
     figure;
     ezcontour(@(x, y)pdf(fitgmm, [x y]), [-15 15], [-15 15], 200)
 end
