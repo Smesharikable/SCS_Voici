@@ -12,6 +12,7 @@ classdef gmmaptest
         Exstat = [];
         newp = [];
         newmu = [];
+        newsigma = [];
         coef =[];
     end
     
@@ -129,6 +130,46 @@ classdef gmmaptest
             end
             outG = outGmms;
             outD = outData;
+        end
+        
+        function outGmm = EM(obj, data, iterations)
+            outGmm = obj.gmmin;
+            T = length(data(:, 1));
+            N = obj.gmmin.NComponents;
+            oldp = obj.gmmin.PComponents;
+            oldmu = obj.gmmin.mu;
+            oldSigma = obj.gmmin.Sigma;
+            for k = 1:iterations
+                obj.newp = zeros(1, obj.gmmin.NComponents);
+                obj.newmu = zeros(obj.gmmin.NComponents, obj.gmmin.NDimensions);
+                obj.coef = zeros(1, obj.gmmin.NComponents);
+                obj.newsigma = zeros(1, obj.gmmin.NDimensions, obj.gmmin.NComponents);
+                p = zeros(1, obj.gmmin.NComponents);
+                Pr = zeros(T, obj.gmmin.NComponents);
+                compDensity = zeros(1, obj.gmmin.NComponents);
+                compDensityMult = zeros(1, obj.gmmin.NComponents);
+                for i =1:N
+                    for t = 1:T
+                        for j = 1:N
+                            compDensityMult(j) = 1 / ((2 * pi)^(obj.gmmin.NDimensions/2) * (det(oldSigma(j)^(0.5))));
+                            compDensity(j)= compDensityMult(j) * exp(-0.5 * (data(t,:) - oldmu(j,:)) * inv(oldSigma(j)) * (data(t,:) - oldmu(j,:))');
+                        end;
+                        summ = sum(oldp(:) .* compDensity(:));
+                        p(i) = (oldp(i) * compDensity(i)) / summ;
+                        obj.newp(i) = obj.newp(i) + p(i);
+                        obj.newmu(i,:) = obj.newmu(i,:) + p(i) * (data(t,:));
+                        obj.newsigma(:,:,i) = obj.newsigma(:,:,i) + p(i) * (data(t,:) * (data(t,:)'));
+                        Pr(t,i) = p(i);
+                    end;
+                    obj.newp(i) = obj.newp(i) / T;
+                    obj.newmu(i,:) = obj.newmu(i,:) / sum(Pr(:,i));
+                    obj.newsigma(:,:,i) = obj.newsigma(:,:,i) / sum(Pr(:,i)) - obj.newmu(i,:) * obj.newmu(i,:)'; 
+                end 
+                oldp = obj.newp
+                oldmu = obj.newmu;
+                oldSigma = obj.newsigma;
+            end
+            outGmm = gmdistribution(obj.newmu, obj.newsigma, obj.newp);
         end
     end
         
