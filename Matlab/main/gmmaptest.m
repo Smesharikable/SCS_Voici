@@ -17,7 +17,7 @@ classdef gmmaptest
     end
     
     methods
-        
+        % gmdist - GMM model, which keeps start values (mu, sigma, weight, Number of Components) 
         function obj = gmmaptest(gmdistr)
             if nargin > 0
                 if ~isa(gmdistr, 'gmdistribution')
@@ -28,8 +28,6 @@ classdef gmmaptest
                 obj.Exstat = zeros(gmdistr.NComponents, gmdistr.NDimensions);
             end
         end
-        
-
         
         function obj = set.gmmout(obj, gmm)
             if ~isa(gmm, 'gmdistribution')
@@ -62,28 +60,8 @@ classdef gmmaptest
             T = length(data(:, 1));
             oldp = obj.gmmin.PComponents;
             oldmu = obj.gmmin.mu;
-            %oldSigma = obj.gmmin.Sigma;
             Pr = posterior(outGmm, data);
             for k = 1:iterations
-%                 obj.newp = zeros(1, obj.gmmin.NComponents);
-%                 obj.newmu = zeros(obj.gmmin.NComponents, obj.gmmin.NDimensions);
-%                 obj.coef = zeros(1, obj.gmmin.NComponents);
-%                 p = zeros(1, obj.gmmin.NComponents);
-%                 Pr = zeros(T, obj.gmmin.NComponents);
-%                 compDensity = zeros(1, obj.gmmin.NComponents);
-%                 compDensityMult = zeros(1, obj.gmmin.NComponents);
-%                 for t = 1:T
-%                     for i = 1:obj.gmmin.NComponents
-%                         for j = 1:obj.gmmin.NComponents
-%                             compDensityMult(j) = 1 / ((2 * pi)^(obj.gmmin.NDimensions/2) * (det(oldSigma(j)^(0.5))));
-%                             compDensity(j)= compDensityMult(j) * exp(-0.5 * (data(t,:) - oldmu(j,:)) * inv(oldSigma(j)) * (data(t,:) - oldmu(j,:))');
-%                         end;
-%                         summ = sum(oldp(:) .* compDensity(:));
-%                         p(i) = (oldp(i) * compDensity(i)) / summ;
-%                         Pr(t,i) = p(i);
-%                     end
-%                 end
-                
                 for i = 1:obj.gmmin.NComponents
                     obj.pstat(i) = sum(Pr(:,i));
                     obj.Exstat(i, :) = (Pr(:, i)' * data) / obj.pstat(i);
@@ -99,6 +77,7 @@ classdef gmmaptest
             test = obj;
         end
         
+        % Method for weight fir
         function test = fitbyweight(obj, data, iterations)
             outGmm = obj.gmmin;
             T = length(data(:, 1));
@@ -118,6 +97,10 @@ classdef gmmaptest
             test = outGmm;
         end
         
+        % Divides data into blocks of feature vectors with "intervalLength" length 
+        % Uses weight fit for every block
+        % outG - modified gmm list,where gmm is different for every bloc
+        % outD - divided data blocks' list
         function [outG, outD] = makeOut(obj, data, intervalLength, iteration)
             amount = fix(length(data(:,1)) / intervalLength);
             outGmms = {};
@@ -132,8 +115,11 @@ classdef gmmaptest
             outD = outData;
         end
         
+        % EM algorithm testing
+        % data - feature vectors
+        % iterations - iterations of algorithm
+        % outGmm - new trained GMM
         function outGmm = EM(obj, data, iterations)
-            outGmm = obj.gmmin;
             T = length(data(:, 1));
             N = obj.gmmin.NComponents;
             oldp = obj.gmmin.PComponents;
@@ -165,7 +151,7 @@ classdef gmmaptest
                     obj.newmu(i,:) = obj.newmu(i,:) / sum(Pr(:,i));
                     obj.newsigma(:,:,i) = obj.newsigma(:,:,i) / sum(Pr(:,i)) - obj.newmu(i,:) * obj.newmu(i,:)'; 
                 end 
-                oldp = obj.newp
+                oldp = obj.newp;
                 oldmu = obj.newmu;
                 oldSigma = obj.newsigma;
             end
@@ -187,17 +173,8 @@ classdef gmmaptest
         end
     end
     
-    
     methods (Access = private)
-        
-        function checkData(obj, data)
-            dim = size(data);
-            assert(isnumeric(data), 'Data must be a numeric array');
-            assert(ndims(data) == 2, 'Data must be a 2-dimensional array');
-            assert(dim(2) == obj.gmmin.NDimensions, ...
-                'Data second dimension must be equal gmdistribution.NDimensions');
-        end
-        
+        % for 2 dimensional case
         function visualize(obj, data, outGmm)
             figure;
             hold on;
