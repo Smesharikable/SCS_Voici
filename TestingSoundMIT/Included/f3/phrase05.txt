@@ -1,0 +1,7 @@
+Speaker:	f02
+Session:	1
+List:	female_list_1a
+Gender:	female
+Location:	Office
+Microphone:	Headset
+Phrase:	anastasia tolstoy

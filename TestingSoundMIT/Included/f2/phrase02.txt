@@ -1,0 +1,7 @@
+Speaker:	f01
+Session:	1
+List:	female_list_2a
+Gender:	female
+Location:	Office
+Microphone:	Headset
+Phrase:	pralines and cream

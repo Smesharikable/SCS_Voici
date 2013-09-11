@@ -1,0 +1,7 @@
+Speaker:	m00
+Session:	1
+List:	male_list_8a
+Gender:	male
+Location:	Office
+Microphone:	Headset
+Phrase:	john lee
