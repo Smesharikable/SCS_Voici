@@ -1,0 +1,7 @@
+Speaker:	f00
+Session:	1
+List:	female_list_3a
+Gender:	female
+Location:	Office
+Microphone:	Headset
+Phrase:	adriana girton

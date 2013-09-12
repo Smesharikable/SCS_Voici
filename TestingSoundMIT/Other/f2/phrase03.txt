@@ -1,0 +1,7 @@
+Speaker:	f02_i
+Session:	Imposter
+List:	imposter_list_f1
+Gender:	female
+Location:	Office
+Microphone:	Headset
+Phrase:	carol owens

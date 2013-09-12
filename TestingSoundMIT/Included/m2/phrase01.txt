@@ -1,0 +1,7 @@
+Speaker:	m02
+Session:	1
+List:	male_list_2a
+Gender:	male
+Location:	Office
+Microphone:	Headset
+Phrase:	chia-hao la

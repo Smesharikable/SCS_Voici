@@ -1,0 +1,7 @@
+Speaker:	m01_i
+Session:	Imposter
+List:	imposter_list_m2
+Gender:	male
+Location:	Office
+Microphone:	Headset
+Phrase:	david bruneau
