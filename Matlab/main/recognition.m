@@ -23,14 +23,20 @@ classdef recognition
              obj.gmmMain = obj.gmmMain.fitByMeans(dataMatrix, mapIteration);
              obj.DATA = obj.gmmMain.divideBlock(dataMatrix,  obj.dataStates);
              obj.GMMS = obj.gmmMain.fitBlockWeights(dataMatrix,  obj.dataStates, mapIteration);
-             ViterbiD(obj.GMMS, obj.DATA);
+             %ViterbiD(obj.GMMS, obj.DATA);
+             for i = 1:obj.dataStates
+                fprintf('Identification [%i]: %i\n', i, simpleIdent(obj.GMMS{i}, dataMatrix));
+             end
         end
         
         % Verifies data, using fitted GMMS from original person
         % dataMatrix - testing feature vectors
         function test = compare(obj, dataMatrix)
             otherDATA = obj.gmmMain.divideBlock(dataMatrix,  obj.dataStates);
-            ViterbiD(obj.GMMS, otherDATA); 
+            %ViterbiD(obj.GMMS, otherDATA);
+             for i = 1:obj.dataStates
+                fprintf('Identification [%i]: %i\n', i, simpleIdent(obj.GMMS{i}, dataMatrix));
+             end
         end
     end
 end

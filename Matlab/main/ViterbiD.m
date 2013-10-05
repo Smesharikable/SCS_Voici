@@ -1,11 +1,11 @@
-function ViterbiD = ViterbiD(GMMS, DATA)    
+function [A, B] = ViterbiD(GMMS, DATA)    
     % Modeling for D-dimensional case
 
     Start = cputime; % Measure of time
 
     % ------ What we have: ------- %
     D = GMMS{1}.NDimensions;
-    component = max(size(DATA)); % count parts
+    component = max(size(DATA)); % „исло состо€ний в HMM моделе
     feature = length(DATA{1}); % count of vector-features in single MAP-model 
     countFeature = component*feature; % count of all vector-features
     gaussian = GMMS{1}.NComponents; % count of gaussians in single MAP-model
@@ -38,21 +38,29 @@ function ViterbiD = ViterbiD(GMMS, DATA)
     % end
 
     % probability vector of initial states
+    
+    % ћассив начальных веро€тностей
     pi = zeros(component,1);
     pi(1,1) = 1;
 
     % matrix of transitions
+    % ћатрица переходов из i-го состо€ни€ в j-е. 
+    % ƒелаем верхнедиагональную матрицу, заполн€€ еЄ веро€тност€ми 0.5
     A = .5 * eye(component);
     for i = 1:(component-1)
         A(i,i+1)=.5;
     end
 
     % calculation of emission probability
+    % B - матрица определ€юща€ веро€тность конкретного наблюдени€ 
+    % из некоторого состо€ни€
+    % K x N, где K число состо€ни€ HMM, а N число наблюдений.
     B = zeros(component); 
     for i = 1:component
+        % »споьзуетс€ плотность нормального распределени€ 
        B(i,i) = B_emis(i, GMMS{i}, DATA);
     end
-
+ 
 
     % ------ algorithm Viterbi -------%
     Pr = zeros(component); % target probability
@@ -60,6 +68,7 @@ function ViterbiD = ViterbiD(GMMS, DATA)
     TIndex = zeros(component);
     aaa = zeros(component,1);
 
+    % ѕеремножаем 0.5 в нормальным распределением
     for i = 1:component
         Pr(i,1) = pi(i)* B(i,1);
         TIndex(1,1) = 1;
@@ -88,6 +97,7 @@ function ViterbiD = ViterbiD(GMMS, DATA)
     for i = (T-1):-1:2
         X(i) = TIndex(X(i+1), i+1);
     end
+
 
     fprintf('States: 1 ');
     fprintf('%i ', X(1:component-1));
