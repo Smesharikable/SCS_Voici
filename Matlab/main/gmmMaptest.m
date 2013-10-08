@@ -5,7 +5,7 @@ classdef gmmMaptest
         relativeCoeff = 16;
     end
     
-    properties (GetAccess = public, SetAccess = protected)
+    properties (GetAccess = public)
         gmmin
         gmmout
         pstat = [];
@@ -14,6 +14,7 @@ classdef gmmMaptest
         newmu = [];
         newsigma = [];
         coef =[];
+        NComponents
     end
     
     
@@ -26,6 +27,7 @@ classdef gmmMaptest
                 end
                 obj.gmmin = gmdistr;
                 obj.pstat = zeros(1, gmdistr.NComponents);
+                obj.NComponents = gmdistr.NComponents;
                 obj.Exstat = zeros(gmdistr.NComponents, gmdistr.NDimensions);
             end
         end
@@ -82,7 +84,8 @@ classdef gmmMaptest
                 outGmm = gmdistribution(obj.gmmin.mu, obj.gmmin.Sigma, obj.newp);
                 oldp = obj.newp;
             end
-            test = outGmm;
+            obj.gmmout = outGmm;
+            test = obj;
         end
         
         % Uses weight fit for every feature vector block
@@ -91,7 +94,8 @@ classdef gmmMaptest
         function [outGmm] = fitBlockWeights(obj, data, blockAmount, iteration)
             outData = obj.divideBlock(data, blockAmount); 
             for i = 1:blockAmount
-                outGmms{i} = obj.fitByWeights(outData{i}, iteration);
+                obj = obj.fitByWeights(outData{i}, iteration); 
+                outGmms{i} = obj.gmmout;
             end
             outGmm = outGmms;
         end
