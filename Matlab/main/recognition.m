@@ -3,7 +3,7 @@ classdef recognition
     properties (GetAccess = public)
         % GMM of voice, which will be compared
         gmmMain
-        % Block - weight fitted gmms
+        % Block - weight&mean fitted gmms
         GMMS = {}
         % Block divided data
         DATA = {}
@@ -23,14 +23,15 @@ classdef recognition
              obj.gmmMain = obj.gmmMain.fitByMeans(dataMatrix, mapIteration);
              obj.DATA = obj.gmmMain.divideBlock(dataMatrix,  obj.dataStates);
              obj.GMMS = obj.gmmMain.fitBlockWeights(dataMatrix,  obj.dataStates, mapIteration);
-             ViterbiD(obj.GMMS, obj.DATA);
+             HMM = hmm(obj.GMMS, obj.DATA);
+             fprintf('Emis matrix : GMMs x Data \n');
+             HMM.emisB
         end
         
         % Verifies data, using fitted GMMS from original person
         % dataMatrix - testing feature vectors
         function test = compare(obj, dataMatrix)
             otherDATA = obj.gmmMain.divideBlock(dataMatrix,  obj.dataStates);
-            ViterbiD(obj.GMMS, otherDATA); 
         end
     end
 end
