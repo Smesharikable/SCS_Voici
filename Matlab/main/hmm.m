@@ -36,7 +36,7 @@ classdef hmm
         % with probability 0.5 to taking a self-loop
         % and probability 0.5 to going to the next state
         function matA = initA(obj)
-            matA = eye(obj.nStates);
+            matA = .5 * eye(obj.nStates);
             for i = 1:obj.nStates - 1
                 matA(i, i + 1) = 0.5;
             end
