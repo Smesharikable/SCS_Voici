@@ -1,3 +1,4 @@
+% TODO: change name to gmmMap
 classdef gmmMaptest
     
     properties (Access = public)
