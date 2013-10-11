@@ -19,7 +19,7 @@ classdef recognition
         function obj = recognition(dataMatrix, mapIteration, stateAmount)
             % TODO: change constant string to parameter
             ubm = importdata('UBM\mainUbmObj.mat');
-            obj.gmmMain = gmmMaptest(ubm);
+            obj.gmmMain = gmmMap(ubm);
             obj.dataStates = stateAmount;
             obj.gmmMain = obj.gmmMain.fitByMeans(dataMatrix, mapIteration);
             obj.DATA = obj.gmmMain.divideBlock(dataMatrix,  obj.dataStates);

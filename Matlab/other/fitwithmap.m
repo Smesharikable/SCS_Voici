@@ -53,7 +53,7 @@ function gmm = gmmMap(input, srcgmm, relfactor, correctDimension)
         weights(i) = (coef(i) * weights(i) / T + (1 - coef(i)) * w(i));
         means(i, :) = coef(i) .* means(i) + (1 - coef(i)) .* mu(i, :);
         sigmas(:, :, i) = coef(i) .* sigmas(:, :, i) + (1 - coef(i)) .* (sigma(:, :, i)...
-            + correctDimension(mu(i, :) .* mu(i, :))) - correctD  imension(means(i, :) .* means(i, :));
+            + correctDimension(mu(i, :) .* mu(i, :))) - correctDimension(means(i, :) .* means(i, :));
     end
            
     gmm = gmdistribution(means, sigmas, weights);
