@@ -11,7 +11,7 @@ classdef hmm
         matVit
         % Viterbi path
         pathVit
-        % GMM - arrray of gmdistribution for model training
+        % GMM - array of gmdistribution for model training
         GMM
         % DATA - block divided data for training
         DATA
@@ -26,12 +26,27 @@ classdef hmm
             obj.GMM = GMMS;
             obj.DATA = DATA;
             obj.nStates = length(DATA);
+<<<<<<< .mine
             % Initialization - up-triangle matrix filled by 0.5
             obj.transitA = triu(0.5 * ones(obj.nStates));
+=======
+            % Initialization - look at the initA() description
+            obj.transitA = obj.initA();
+>>>>>>> .theirs
             % Initialization, using normal probability density function
             obj.emisB = obj.initB();
             obj.matVit = zeros(obj.nStates, obj.nStates);
             [obj.pathVit, obj.matVit] = obj.findPath();
+        end
+        
+        % Create transition probability matrix
+        % with probability 0.5 to taking a self-loop
+        % and probability 0.5 to going to the next state
+        function matA = initA(obj)
+            matA = .5 * eye(obj.nStates);
+            for i = 1:obj.nStates - 1
+                matA(i, i + 1) = 0.5;
+            end
         end
         
         % Counting likelihood matrix matB consisting
@@ -46,18 +61,16 @@ classdef hmm
         end
         
         % State observation likelihood calculation
-        function likelihood = likelihoodCalc(obj, gmmDistr, Data)
+        function likelihood = likelihoodCalc(~, gmmDistr, Data)
             vectAmount = length(Data(:,1));
-            vectProb = zeros(vectAmount, 1);
-            gaussProb = zeros(gmmDistr.NComponents, 1);
+            vectProb = 0;
             counter = 0;
             for i = 1:vectAmount
                 for j = 1:gmmDistr.NComponents
-                    gaussProb(j) =  gmmDistr.PComponents(j) * ...
+                    vectProb = vectProb + gmmDistr.PComponents(j) * ...
                     mvnpdf(Data(i, :), gmmDistr.mu(j,:), gmmDistr.Sigma(:,:,1));
-                    vectProb(i,1) = vectProb(i,1) + gaussProb(j,1);
                 end
-                counter = counter + log(vectProb(i,1));
+                counter = counter + log(vectProb);
             end
             likelihood = counter;
         end
