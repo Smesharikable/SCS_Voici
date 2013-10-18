@@ -21,7 +21,7 @@ classdef gmmMap
     
     methods
         % gmdist - GMM model(UBM), which keeps start values (mu, sigma, weight, Number of Components) 
-        function obj = gmmMap(gmdistr)
+        function obj = gmmMaptest(gmdistr)
             if nargin > 0
                 if ~isa(gmdistr, 'gmdistribution')
                     error('Input parameter must be a gmdistribution');

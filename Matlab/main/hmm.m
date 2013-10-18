@@ -26,13 +26,8 @@ classdef hmm
             obj.GMM = GMMS;
             obj.DATA = DATA;
             obj.nStates = length(DATA);
-<<<<<<< .mine
-            % Initialization - up-triangle matrix filled by 0.5
-            obj.transitA = triu(0.5 * ones(obj.nStates));
-=======
             % Initialization - look at the initA() description
             obj.transitA = obj.initA();
->>>>>>> .theirs
             % Initialization, using normal probability density function
             obj.emisB = obj.initB();
             obj.matVit = zeros(obj.nStates, obj.nStates);

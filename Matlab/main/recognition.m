@@ -27,8 +27,6 @@ classdef recognition
             HMM = hmm(obj.GMMS, obj.DATA);
             fprintf('Emis matrix : GMMs x Data \n');
             HMM.emisB
-             fprintf('Vit matrix : \n');
-             HMM.matVit
         end
         
         % Verifies data, using fitted GMMS from original person
