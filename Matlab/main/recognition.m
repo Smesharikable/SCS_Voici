@@ -25,8 +25,6 @@ classdef recognition
             obj.DATA = obj.gmmMain.divideBlock(dataMatrix,  obj.dataStates);
             obj.GMMS = obj.gmmMain.fitBlockWeights(dataMatrix,  obj.dataStates, mapIteration);
             HMM = hmm(obj.GMMS, obj.DATA);
-            fprintf('Emis matrix : GMMs x Data \n');
-            HMM.emisB
         end
         
         % Verifies data, using fitted GMMS from original person
